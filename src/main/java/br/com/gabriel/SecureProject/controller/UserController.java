@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
 public class UserController {
     private final UserRepository userRepository;
@@ -21,8 +23,9 @@ public class UserController {
 
     @PostMapping("/signIn")
     public ResponseEntity<UserSignInResponse> signIn(@RequestBody SignInRequest signInRequest) {
-        User user = userRepository.findByEmailAndPassword(signInRequest.getEmail(), signInRequest.getPassword());
+        Optional<User> user = userRepository.findByEmailAndPassword(signInRequest.getEmail(), signInRequest.getPassword());
 
-        return ResponseEntity.ok(new UserSignInResponse(user));
+        return user.map(u -> ResponseEntity.ok(new UserSignInResponse(u)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
